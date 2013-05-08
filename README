@@ -1,0 +1,10 @@
+SDR SDRAM controller
+====================
+
+This is a simple 16 bit single data rate SDRAM controller.  Currently all
+accesses are single accesses and auto precharged so it's not really optimized.
+Accesses are performed when h_bytesel != 0, and the h_compl signal is strobed
+when the access has completed.
+
+Everything other than the Micron model (property of Micron) is licensed under
+GPLv2.
