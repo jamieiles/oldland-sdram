@@ -37,6 +37,12 @@ localparam tMRD			= 2;
 localparam tRCD			= 2;
 localparam cas			= 2;
 /*
+ * From idle, what is the longest path to get back to idle (excluding
+ * autorefresh)?  We need to know this to make sure that we issue the
+ * autorefresh command often enough.
+ */
+localparam max_cmd_period	= tRCD + tRP + 1;
+/*
  * tRef of 64ms for normal temperatures (< 85C).
  *
  * Need to refresh 8192 times every tRef.
@@ -114,7 +120,7 @@ counter		#(.count_width(timec_width),
 localparam refresh_counter_width = $clog2(tRef);
 wire [refresh_counter_width - 1:0] refresh_count;
 counter		#(.count_width(refresh_counter_width),
-		  .count_max(tRef - 16))
+		  .count_max(tRef - max_cmd_period))
 		refresh_counter(.clk(clk),
 				.count(refresh_count),
 				.reset(autorefresh_counter_clr));
