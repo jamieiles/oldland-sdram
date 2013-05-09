@@ -7,7 +7,7 @@ wire clk180 = ~clk;
 
 always #10 clk = ~clk;
 
-reg [15:0] h_wdata = 16'h0000;
+wire [15:0] h_wdata;
 wire [15:0] h_rdata;
 reg [31:0] h_addr = 32'h00000000;
 wire h_wr_en = ~write_done;
@@ -23,6 +23,11 @@ wire s_cs_n;
 wire s_clken;
 wire [15:0] s_data;
 wire [1:0] s_banksel;
+reg pattern_sel = 0;
+
+test_pattern_gen tpg(.pattern_sel(pattern_sel),
+		     .addr(h_addr),
+		     .data(h_wdata));
 
 sdram_controller ctrl(.clk(clk),
 		      .h_addr(h_addr),
@@ -62,6 +67,7 @@ localparam STATE_RESET	= 3'b000;
 localparam STATE_IDLE	= 3'b001;
 localparam STATE_WRITE	= 3'b011;
 localparam STATE_READ	= 3'b010;
+localparam STATE_INC	= 3'b110;
 
 reg [2:0] state = STATE_RESET;
 reg [2:0] next_state = STATE_RESET;
@@ -78,17 +84,20 @@ always @(*) begin
 	end
 	STATE_WRITE: begin
 		if (h_compl)
-			next_state = STATE_IDLE;
+			next_state = STATE_INC;
 	end
 	STATE_READ: begin
 		if (h_compl) begin
-			next_state = STATE_IDLE;
-			if (h_rdata != h_addr) begin
+			next_state = STATE_INC;
+			if (h_rdata != h_wdata) begin
 				$display("ERROR: expected %x at address %x, got %x",
 					h_addr, h_addr, h_rdata);
 				$finish;
 			end
 		end
+	end
+	STATE_INC: begin
+		next_state = STATE_IDLE;
 	end
 	default: begin
 		next_state = STATE_IDLE;
@@ -96,28 +105,31 @@ always @(*) begin
 	endcase
 end
 
-reg [15:0] next_data = 16'b0;
-reg [31:0] next_addr = 32'b0;
+localparam last_addr = 16'hfffe;
 
 always @(*) begin
-	if (state == STATE_IDLE) begin
-		if (h_addr[15:0] == 16'hfffe && !write_done) begin
-			$display("%f finished writing", $time);
-			write_done = 1'b1;
-		end else if (h_addr[15:0] == 16'hfffe) begin
-			$display("%f write+read test passed", $time);
-			$finish;
-		end
-		next_addr = write_done && h_addr[15:0] == 16'hfffe ? 32'd2 : h_addr + 2;
-		next_data = h_wdata + 2;
-		h_bytesel = 2'b11;
-	end
+	case (state)
+	STATE_READ: h_bytesel = h_compl ? 2'b00 : 2'b11;
+	STATE_WRITE: h_bytesel = h_compl ? 2'b00 : 2'b11;
+	default: h_bytesel = 2'b00;
+	endcase
 end
 
 always @(posedge clk) begin
-	if (state == STATE_IDLE) begin
-		h_addr <= next_addr;
-		h_wdata <= next_data;
+	if (state == STATE_INC) begin
+		h_addr <= h_addr[15:0] == last_addr ?
+			32'd0 : h_addr + 32'd2;
+		if (h_addr[15:0] == last_addr && !write_done) begin
+			$display("test pattern: %s", pattern_sel ? "aa55/55aa" : "address + 1");
+			$display("%f finished writing", $time);
+			write_done <= 1'b1;
+		end else if (h_addr[15:0] == last_addr) begin
+			$display("%f write+read test passed", $time);
+			write_done <= 1'b0;
+			pattern_sel <= 1'b1;
+			if (pattern_sel)
+				$finish;
+		end
 	end
 end
 
