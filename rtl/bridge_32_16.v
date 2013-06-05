@@ -19,7 +19,7 @@ module bridge_32_16(input wire clk,
 		    output reg [31:0] b_addr,
 		    output reg [15:0] b_wdata,
 		    input wire [15:0] b_rdata,
-		    output wire b_wr_en,
+		    output reg b_wr_en,
 		    output reg [1:0] b_bytesel,
 		    input wire b_compl);
 
@@ -29,14 +29,13 @@ initial begin
 	b_addr			= 32'b0;
 	b_wdata			= 16'b0;
 	b_bytesel		= 2'b00;
+	b_wr_en			= 1'b0;
 end
 
 localparam STATE_IDLE		= 2'b00;
 localparam STATE_HWORD1		= 2'b01;
 localparam STATE_HWORD2		= 2'b11;
 localparam STATE_COMPL		= 2'b10;
-
-assign b_wr_en			= h_wr_en;
 
 reg [1:0] state			= STATE_IDLE;
 reg [1:0] next_state		= STATE_IDLE;
@@ -94,6 +93,8 @@ always @(posedge clk) begin
 	case (state)
 	STATE_IDLE: begin
 		h_rdata <= 32'b0;
+		if (h_cs && |h_bytesel)
+			b_wr_en <= h_wr_en;
 	end
 	STATE_HWORD1: begin
 		if (b_compl && !h_wr_en)
