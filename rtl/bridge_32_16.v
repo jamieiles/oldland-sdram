@@ -8,6 +8,7 @@
  */
 module bridge_32_16(input wire clk,
 		    /* Host side interfaces. */
+		    input wire h_cs,
 		    input wire [31:0] h_addr,
 		    input wire [31:0] h_wdata,
 		    output reg [31:0] h_rdata,
@@ -45,7 +46,7 @@ always @(*) begin
 
 	case (state)
 	STATE_IDLE: begin
-		if (|h_bytesel)
+		if (h_cs && |h_bytesel)
 			next_state = |h_bytesel[1:0] ? STATE_HWORD1 :
 				STATE_HWORD2;
 	end
