@@ -1,4 +1,3 @@
-`include "counter.v"
 /*
  * Simple SDR SDRAM controller for 4Mx16x4 devices, e.g. ISSI IS45S16160G
  * (32MB).
