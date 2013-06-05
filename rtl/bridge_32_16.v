@@ -71,12 +71,12 @@ always @(*) begin
 	end
 	STATE_HWORD1: begin
 		b_addr = {h_addr[31:2], 2'b00};
-		b_bytesel = h_bytesel[1:0];
+		b_bytesel = b_compl ? 2'b00 : h_bytesel[1:0];
 		b_wdata = h_wdata[15:0];
 	end
 	STATE_HWORD2: begin
 		b_addr = {h_addr[31:2], 2'b10};
-		b_bytesel = h_bytesel[3:2];
+		b_bytesel = b_compl ? 2'b00 : h_bytesel[3:2];
 		b_wdata = h_wdata[31:16];
 	end
 	default: begin
