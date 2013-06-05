@@ -68,6 +68,8 @@ always @(*) begin
 	case (state)
 	STATE_IDLE: begin
 		b_bytesel = 2'b00;
+		b_addr = 32'b0;
+		b_wdata = 16'b0;
 	end
 	STATE_HWORD1: begin
 		b_addr = {h_addr[31:2], 2'b00};
@@ -80,6 +82,9 @@ always @(*) begin
 		b_wdata = h_wdata[31:16];
 	end
 	default: begin
+		b_bytesel = 2'b00;
+		b_addr = 32'b0;
+		b_wdata = 16'b0;
 	end
 	endcase
 end

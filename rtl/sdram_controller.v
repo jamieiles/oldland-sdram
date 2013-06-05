@@ -129,6 +129,7 @@ wire autorefresh_pending = refresh_count == tRef[refresh_counter_width - 1:0] - 
 reg autorefresh_counter_clr = 1'b0;
 
 always @(*) begin
+	next_state = state;
 	case (state)
 	STATE_RESET: begin
 		if (timec == tReset[timec_width - 1:0] - 1)
