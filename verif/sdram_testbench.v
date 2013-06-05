@@ -13,6 +13,7 @@ reg [31:0] h_addr = 32'h00000000;
 wire h_wr_en = ~write_done;
 reg [1:0] h_bytesel = 2'b00;
 wire h_compl;
+wire h_config_done;
 
 wire s_ras_n;
 wire s_cas_n;
@@ -36,6 +37,7 @@ sdram_controller ctrl(.clk(clk),
 		      .h_compl(h_compl),
 		      .h_wdata(h_wdata),
 		      .h_rdata(h_rdata),
+		      .h_config_done(h_config_done),
 		      .s_ras_n(s_ras_n),
 		      .s_cas_n(s_cas_n),
 		      .s_wr_en(s_wr_en),

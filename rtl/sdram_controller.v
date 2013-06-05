@@ -15,6 +15,7 @@ module sdram_controller(input wire clk,
 			input wire h_wr_en,
 			input wire [1:0] h_bytesel,
 			output reg h_compl,
+			output reg h_config_done,
 			/* SDRAM signals. */
 			output wire s_ras_n,
 			output wire s_cas_n,
@@ -96,6 +97,7 @@ initial begin
 	s_banksel		= 2'b00;
 	h_rdata			= 16'b0;
 	h_compl			= 1'b0;
+	h_config_done		= 1'b0;
 end
 
 /*
@@ -248,6 +250,8 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
+	if (state == STATE_IDLE)
+		h_config_done <= 1'b1;
 	/* Register the read data after CAS cycles. */
 	if (state == STATE_READ && timec == cas - 1) begin
 		h_rdata <= s_data;
