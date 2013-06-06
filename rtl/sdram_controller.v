@@ -79,7 +79,7 @@ assign s_cs_n			= cmd[3];
 assign s_ras_n			= cmd[2];
 assign s_cas_n			= cmd[1];
 assign s_wr_en			= cmd[0];
-assign s_data			= h_wr_en ? h_wdata : 16'bz;
+assign s_data			= h_wr_en ? h_wdata : {16{1'bz}};
 
 /*
  * We support 4 banks of 8MB each, rather than interleaving one bank follows
