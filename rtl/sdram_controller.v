@@ -260,7 +260,7 @@ always @(posedge clk) begin
 	end else if (state == STATE_WRITE && timec == tRP - 1) begin
 		h_compl <= 1'b1;
 	end else if (state == STATE_MRS && timec == tMRD - 1) begin
-		h_compl = 1'b1;
+		h_compl <= 1'b1;
 	end else begin
 		h_compl <= 1'b0;
 	end
