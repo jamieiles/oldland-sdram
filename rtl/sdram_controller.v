@@ -81,14 +81,16 @@ assign s_cas_n			= cmd[1];
 assign s_wr_en			= cmd[0];
 assign s_data			= h_wr_en ? h_wdata : {16{1'bz}};
 
+reg [31:0] addr			= 32'b0;
+
 /*
  * We support 4 banks of 8MB each, rather than interleaving one bank follows
  * the next.  We ignore the LSB of the address - unaligned accesses are not
  * supported and are undefined.
  */
-wire [1:0] h_banksel		= h_addr[24:23];
-wire [12:0] h_rowsel		= h_addr[22:10];
-wire [8:0] h_colsel		= h_addr[9:1];
+wire [1:0] h_banksel		= addr[24:23];
+wire [12:0] h_rowsel		= addr[22:10];
+wire [8:0] h_colsel		= addr[9:1];
 
 initial begin
 	s_clken			= 1'b1;
@@ -253,6 +255,7 @@ end
 always @(posedge clk) begin
 	if (state == STATE_IDLE) begin
 		h_config_done <= 1'b1;
+		addr <= h_addr;
 	end if (state == STATE_READ && timec == cas) begin
 		/* Register the read data after CAS cycles. */
 		h_rdata <= s_data;
