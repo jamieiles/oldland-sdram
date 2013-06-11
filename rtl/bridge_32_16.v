@@ -98,8 +98,7 @@ always @(posedge clk) begin
 	case (state)
 	STATE_IDLE: begin
 		h_rdata <= 32'b0;
-		if (h_cs && |h_bytesel)
-			b_wr_en <= h_wr_en;
+		b_wr_en <= h_cs && |h_bytesel && h_wr_en;
 	end
 	STATE_HWORD1: begin
 		if (b_compl && !h_wr_en) begin
@@ -112,6 +111,7 @@ always @(posedge clk) begin
 		if (b_compl && !h_wr_en) begin
 			h_rdata[31:16] <= b_rdata;
 			h_compl <= 1'b1;
+			b_wr_en <= 1'b0;
 		end
 	end
 	default: begin
