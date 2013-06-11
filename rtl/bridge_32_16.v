@@ -101,18 +101,22 @@ always @(posedge clk) begin
 		b_wr_en <= h_cs && |h_bytesel && h_wr_en;
 	end
 	STATE_HWORD1: begin
-		if (b_compl && !h_wr_en) begin
+		if (b_compl && !h_wr_en)
 			h_rdata[15:0] <= b_rdata;
-			if (~|h_bytesel[3:2])
-				h_compl <= 1'b1;
+
+		if (~|h_bytesel[3:2] && b_compl) begin
+			h_compl <= 1'b1;
+			b_wr_en <= 1'b0;
 		end
 	end
 	STATE_HWORD2: begin
 		if (b_compl && !h_wr_en) begin
 			h_rdata[31:16] <= b_rdata;
 			h_compl <= 1'b1;
-			b_wr_en <= 1'b0;
 		end
+
+		if (b_compl)
+			b_wr_en <= 1'b0;
 	end
 	default: begin
 	end
