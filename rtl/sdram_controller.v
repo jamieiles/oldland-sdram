@@ -169,11 +169,11 @@ always @(*) begin
 			next_state = h_wr_en ? STATE_WRITE : STATE_READ;
 	end
 	STATE_WRITE: begin
-		if (timec == tRP - 1)
+		if (timec == tRP)
 			next_state = STATE_IDLE;
 	end
 	STATE_READ: begin
-		if (timec == cas - 1)
+		if (timec == cas)
 			next_state = STATE_IDLE;
 	end
 	STATE_AUTOREF: begin
@@ -251,13 +251,13 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
-	if (state == STATE_IDLE)
+	if (state == STATE_IDLE) begin
 		h_config_done <= 1'b1;
-	/* Register the read data after CAS cycles. */
-	if (state == STATE_READ && timec == cas - 1) begin
+	end if (state == STATE_READ && timec == cas) begin
+		/* Register the read data after CAS cycles. */
 		h_rdata <= s_data;
 		h_compl <= 1'b1;
-	end else if (state == STATE_WRITE && timec == tRP - 1) begin
+	end else if (state == STATE_WRITE && timec == tRP) begin
 		h_compl <= 1'b1;
 	end else if (state == STATE_MRS && timec == tMRD - 1) begin
 		h_compl <= 1'b1;
