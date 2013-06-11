@@ -120,13 +120,13 @@ counter		#(.count_width(timec_width),
  */
 localparam refresh_counter_width = $clog2(tRef);
 wire [refresh_counter_width - 1:0] refresh_count;
+reg autorefresh_counter_clr = 1'b0;
 counter		#(.count_width(refresh_counter_width),
 		  .count_max(tRef - max_cmd_period))
 		refresh_counter(.clk(clk),
 				.count(refresh_count),
 				.reset(autorefresh_counter_clr));
 wire autorefresh_pending = refresh_count == tRef[refresh_counter_width - 1:0] - max_cmd_period;
-reg autorefresh_counter_clr = 1'b0;
 
 always @(*) begin
 	next_state = state;
