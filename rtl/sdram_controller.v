@@ -125,7 +125,7 @@ counter		#(.count_width(refresh_counter_width),
 		refresh_counter(.clk(clk),
 				.count(refresh_count),
 				.reset(autorefresh_counter_clr));
-wire autorefresh_pending = refresh_count == tRef[refresh_counter_width - 1:0] - 16;
+wire autorefresh_pending = refresh_count == tRef[refresh_counter_width - 1:0] - max_cmd_period;
 reg autorefresh_counter_clr = 1'b0;
 
 always @(*) begin
