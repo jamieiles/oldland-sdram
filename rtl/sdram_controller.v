@@ -9,7 +9,7 @@
  */
 module sdram_controller(input wire clk,
 			/* Host interface. */
-			input wire [31:0] h_addr,
+			input wire [30:0] h_addr,
 			input wire [15:0] h_wdata,
 			output reg [15:0] h_rdata,
 			input wire h_wr_en,
@@ -255,7 +255,7 @@ end
 always @(posedge clk) begin
 	if (state == STATE_IDLE) begin
 		h_config_done <= 1'b1;
-		addr <= h_addr;
+		addr <= {h_addr, 1'b0};
 	end if (state == STATE_READ && timec == cas) begin
 		/* Register the read data after CAS cycles. */
 		h_rdata <= s_data;

@@ -9,14 +9,14 @@
 module bridge_32_16(input wire clk,
 		    /* Host side interfaces. */
 		    input wire h_cs,
-		    input wire [31:0] h_addr,
+		    input wire [29:0] h_addr,
 		    input wire [31:0] h_wdata,
 		    output reg [31:0] h_rdata,
 		    input wire h_wr_en,
 		    input wire [3:0] h_bytesel,
 		    output reg h_compl,
 		    /* 16-bit bridge interfaces. */
-		    output reg [31:0] b_addr,
+		    output reg [30:0] b_addr,
 		    output reg [15:0] b_wdata,
 		    input wire [15:0] b_rdata,
 		    output reg b_wr_en,
@@ -26,7 +26,7 @@ module bridge_32_16(input wire clk,
 initial begin
 	h_rdata			= 32'b0;
 	h_compl			= 1'b0;
-	b_addr			= 32'b0;
+	b_addr			= 31'b0;
 	b_wdata			= 16'b0;
 	b_bytesel		= 2'b00;
 	b_wr_en			= 1'b0;
@@ -68,22 +68,22 @@ always @(*) begin
 	case (state)
 	STATE_IDLE: begin
 		b_bytesel = 2'b00;
-		b_addr = 32'b0;
+		b_addr = 31'b0;
 		b_wdata = 16'b0;
 	end
 	STATE_HWORD1: begin
-		b_addr = {h_addr[31:2], 2'b00};
+		b_addr = {h_addr, 1'b0};
 		b_bytesel = b_compl ? 2'b00 : h_bytesel[1:0];
 		b_wdata = h_wdata[15:0];
 	end
 	STATE_HWORD2: begin
-		b_addr = {h_addr[31:2], 2'b10};
+		b_addr = {h_addr, 1'b1};
 		b_bytesel = b_compl ? 2'b00 : h_bytesel[3:2];
 		b_wdata = h_wdata[31:16];
 	end
 	default: begin
 		b_bytesel = 2'b00;
-		b_addr = 32'b0;
+		b_addr = 31'b0;
 		b_wdata = 16'b0;
 	end
 	endcase
