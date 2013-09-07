@@ -162,18 +162,18 @@ module mt48lc16m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
     `define   LMR       7
 
     // Timing Parameters for -7E PC133 CL2
-    parameter tAC  =   5.4;
-    parameter tHZ  =   5.4;
-    parameter tOH  =   3.0;
-    parameter tMRD =   2.0;     // 2 Clk Cycles
-    parameter tRAS =  37.0;
-    parameter tRC  =  60.0;
-    parameter tRCD =  15.0;
-    parameter tRFC =  66.0;
-    parameter tRP  =  15.0;
-    parameter tRRD =  14.0;
-    parameter tWRa =   7.0;     // A2 Version - Auto precharge mode (1 Clk + 7 ns)
-    parameter tWRm =  14.0;     // A2 Version - Manual precharge mode (14 ns)
+    time tAC  =   5.4;
+    time tHZ  =   5.4;
+    time tOH  =   3.0;
+    time tMRD =   2.0;     // 2 Clk Cycles
+    time tRAS =  37.0;
+    time tRC  =  60.0;
+    time tRCD =  15.0;
+    time tRFC =  66.0;
+    time tRP  =  15.0;
+    time tRRD =  14.0;
+    time tWRa =   7.0;     // A2 Version - Auto precharge mode (1 Clk + 7 ns)
+    time tWRm =  14.0;     // A2 Version - Manual precharge mode (14 ns)
 
     // Timing Check variable
     time  MRD_chk;
