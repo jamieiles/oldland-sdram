@@ -110,13 +110,13 @@ always @(posedge clk) begin
 		end
 	end
 	STATE_HWORD2: begin
-		if (b_compl && !h_wr_en) begin
+		if (b_compl && !h_wr_en)
 			h_rdata[31:16] <= b_rdata;
-			h_compl <= 1'b1;
-		end
 
-		if (b_compl)
+		if (b_compl) begin
+			h_compl <= 1'b1;
 			b_wr_en <= 1'b0;
+		end
 	end
 	default: begin
 	end
