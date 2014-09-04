@@ -39,6 +39,9 @@ localparam STATE_COMPL		= 2'b10;
 
 reg [1:0] state			= STATE_IDLE;
 reg [1:0] next_state		= STATE_IDLE;
+reg [31:0] wdata		= 32'b0;
+reg [3:0] bytesel		= 4'b0;
+reg [29:0] address		= 30'b0;
 
 always @(*) begin
 	next_state = state;
@@ -72,14 +75,14 @@ always @(*) begin
 		b_wdata = 16'b0;
 	end
 	STATE_HWORD1: begin
-		b_addr = {h_addr, 1'b0};
-		b_bytesel = b_compl ? 2'b00 : h_bytesel[1:0];
-		b_wdata = h_wdata[15:0];
+		b_addr = {address, 1'b0};
+		b_bytesel = b_compl ? 2'b00 : bytesel[1:0];
+		b_wdata = wdata[15:0];
 	end
 	STATE_HWORD2: begin
-		b_addr = {h_addr, 1'b1};
-		b_bytesel = b_compl ? 2'b00 : h_bytesel[3:2];
-		b_wdata = h_wdata[31:16];
+		b_addr = {address, 1'b1};
+		b_bytesel = b_compl ? 2'b00 : bytesel[3:2];
+		b_wdata = wdata[31:16];
 	end
 	default: begin
 		b_bytesel = 2'b00;
@@ -98,13 +101,16 @@ always @(posedge clk) begin
 	case (state)
 	STATE_IDLE: begin
 		h_rdata <= 32'b0;
-		b_wr_en <= h_cs && |h_bytesel && h_wr_en;
+		b_wr_en <= h_cs && |bytesel && h_wr_en;
+		wdata <= h_wdata;
+		bytesel <= h_bytesel;
+		address <= h_addr;
 	end
 	STATE_HWORD1: begin
 		if (b_compl && !h_wr_en)
 			h_rdata[15:0] <= b_rdata;
 
-		if (~|h_bytesel[3:2] && b_compl) begin
+		if (~|bytesel[3:2] && b_compl) begin
 			h_compl <= 1'b1;
 			b_wr_en <= 1'b0;
 		end

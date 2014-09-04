@@ -75,11 +75,12 @@ reg [3:0] state			= STATE_RESET;
 reg [3:0] next_state		= STATE_RESET;
 
 reg [3:0] cmd			= CMD_NOP;
+reg [15:0] wdata		= 16'b0;
 assign s_cs_n			= cmd[3];
 assign s_ras_n			= cmd[2];
 assign s_cas_n			= cmd[1];
 assign s_wr_en			= cmd[0];
-assign s_data			= h_wr_en ? h_wdata : {16{1'bz}};
+assign s_data			= h_wr_en ? wdata : {16{1'bz}};
 
 reg [31:0] addr			= 32'b0;
 
@@ -267,6 +268,8 @@ always @(posedge clk) begin
 	end else begin
 		h_compl <= 1'b0;
 	end
+
+	wdata <= h_wdata;
 end
 
 always @(posedge clk)
