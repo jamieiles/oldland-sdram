@@ -10,7 +10,7 @@ reg [count_width - 1:0] count_reg = 0;
 always @(posedge clk) begin
 	if (reset)
 		count_reg <= 0;
-	else if (count_reg != count_max)
+	else if (count_reg != count_max[count_width - 1:0])
 		count_reg <= count_reg + 1'b1;
 end
 
