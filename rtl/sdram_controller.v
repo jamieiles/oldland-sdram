@@ -20,7 +20,7 @@ module sdram_controller(input wire clk,
 			output wire s_ras_n,
 			output wire s_cas_n,
 			output wire s_wr_en,
-			output reg [1:0] s_bytesel,
+			output wire [1:0] s_bytesel,
 			output reg [12:0] s_addr,
 			output wire s_cs_n,
 			output reg s_clken,
@@ -76,11 +76,13 @@ reg [3:0] next_state		= STATE_RESET;
 
 reg [3:0] cmd			= CMD_NOP;
 reg [15:0] wdata		= 16'b0;
+reg [1:0] nbytesel		= 2'b0;
 assign s_cs_n			= cmd[3];
 assign s_ras_n			= cmd[2];
 assign s_cas_n			= cmd[1];
 assign s_wr_en			= cmd[0];
 assign s_data			= h_wr_en ? wdata : {16{1'bz}};
+assign s_bytesel		= nbytesel;
 
 reg [31:0] addr			= 32'b0;
 
@@ -95,7 +97,6 @@ wire [8:0] h_colsel		= addr[9:1];
 
 initial begin
 	s_clken			= 1'b1;
-	s_bytesel		= 2'b00;
 	s_addr			= 13'b0;
 	s_banksel		= 2'b00;
 	h_rdata			= 16'b0;
@@ -193,7 +194,6 @@ always @(*) begin
 	cmd = CMD_NOP;
 	s_addr = 13'b0;
 	s_banksel = 2'b00;
-	s_bytesel = ~h_bytesel;
 	autorefresh_counter_clr = 1'b0;
 
 	case (state)
@@ -270,6 +270,7 @@ always @(posedge clk) begin
 	end
 
 	wdata <= h_wdata;
+	nbytesel <= ~h_bytesel;
 end
 
 always @(posedge clk)
