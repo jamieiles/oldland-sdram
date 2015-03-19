@@ -164,7 +164,7 @@ module mt48lc16m16a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
     // Timing Parameters for -7E PC133 CL2
     time tAC  =   5.4;
     time tHZ  =   5.4;
-    time tOH  =   3.0;
+    time tOH  =   2.7;
     time tMRD =   2.0;     // 2 Clk Cycles
     time tRAS =  37.0;
     time tRC  =  60.0;

@@ -2,16 +2,21 @@
 
 module sdram_testbench();
 
-reg clk = 1'b0;
-wire clk180 = ~clk;
+reg clk = 1'b1;
+reg clk180 = 1'b1;
 
-always #10 clk = ~clk;
+always #10 clk180 = ~clk180;
 
-wire [15:0] h_wdata;
-wire [15:0] h_rdata;
+initial begin
+  #2.7905;
+  forever #10 clk = ~clk;
+end
+
+wire [31:0] h_wdata;
+wire [31:0] h_rdata;
 reg [31:0] h_addr = 32'h00000000;
 wire h_wr_en = ~write_done;
-reg [1:0] h_bytesel = 2'b00;
+reg [3:0] h_bytesel = 4'b0000;
 wire h_compl;
 wire h_config_done;
 
@@ -25,13 +30,15 @@ wire s_clken;
 wire [15:0] s_data;
 wire [1:0] s_banksel;
 reg pattern_sel = 0;
+reg cs = 1'b0;
 
 test_pattern_gen tpg(.pattern_sel(pattern_sel),
-		     .addr(h_addr),
+		     .addr(h_addr[31:2]),
 		     .data(h_wdata));
 
 sdram_controller ctrl(.clk(clk),
-		      .h_addr(h_addr),
+		      .cs(cs),
+		      .h_addr(h_addr[31:2]),
 		      .h_wr_en(h_wr_en),
 		      .h_bytesel(h_bytesel),
 		      .h_compl(h_compl),
@@ -60,7 +67,7 @@ mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Dqm(s_bytesel));
 
 initial begin
-	$dumpfile("sdram.vcd");
+	$dumpfile("sdram.lxt");
 	$dumpvars(0, sdram_testbench);
 	#30000000 $finish;
 end
@@ -94,7 +101,7 @@ always @(*) begin
 			if (h_rdata != h_wdata) begin
 				$display("ERROR: expected %x at address %x, got %x",
 					h_addr, h_addr, h_rdata);
-				$finish;
+				#16 $finish;
 			end
 		end
 	end
@@ -107,22 +114,31 @@ always @(*) begin
 	endcase
 end
 
-localparam last_addr = 16'hfffe;
+localparam last_addr = 16'hfffc;
 
 always @(*) begin
 	case (state)
-	STATE_READ: h_bytesel = h_compl ? 2'b00 : 2'b11;
-	STATE_WRITE: h_bytesel = h_compl ? 2'b00 : 2'b11;
-	default: h_bytesel = 2'b00;
+	STATE_READ: begin
+		h_bytesel = h_compl ? 4'b0 : 4'b1111;
+		cs = 1'b1;
+	end
+	STATE_WRITE: begin
+		h_bytesel = h_compl ? 4'b0 : 4'b1111;
+		cs = 1'b1;
+	end
+	default: begin
+		h_bytesel = 4'b0;
+		cs = 1'b0;
+	end
 	endcase
 end
 
 always @(posedge clk) begin
 	if (state == STATE_INC) begin
 		h_addr <= h_addr[15:0] == last_addr ?
-			32'd0 : h_addr + 32'd2;
+			32'd0 : h_addr + 32'd4;
 		if (h_addr[15:0] == last_addr && !write_done) begin
-			$display("test pattern: %s", pattern_sel ? "aa55/55aa" : "address + 1");
+			$display("test pattern: %s", pattern_sel ? "aa5555aa/55aaaa55" : "address + 1");
 			$display("%f finished writing", $time);
 			write_done <= 1'b1;
 		end else if (h_addr[15:0] == last_addr) begin
