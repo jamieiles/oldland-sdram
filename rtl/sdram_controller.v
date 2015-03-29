@@ -1,6 +1,6 @@
 /*
  * Simple SDR SDRAM controller for 4Mx16x4 devices, e.g. ISSI IS45S16160G
- * (32MB).
+ * (32MB) or 64MB variants.
  */
 module sdram_controller(input wire clk,
 			input wire cs,
@@ -23,6 +23,7 @@ module sdram_controller(input wire clk,
 			inout [15:0] s_data,
 			output reg [1:0] s_banksel);
 
+parameter size			= 32 * 1024 * 1024;
 parameter clkf			= 50000000;
 
 localparam ns_per_clk		= (1000000000 / clkf);
@@ -92,11 +93,24 @@ assign s_bytesel		= outbytesel;
  * the next.  We ignore the LSB of the address - unaligned accesses are not
  * supported and are undefined.
  */
-wire [1:0] latched_banksel	= latched_addr[24:23];
-wire [8:0] latched_colsel	= latched_addr[9:1];
+wire [1:0] latched_banksel;
+wire [1:0] h_banksel;
+wire [12:0] h_rowsel;
+wire [12:0] col_pchg;
 
-wire [1:0] h_banksel		= h_addr[24:23];
-wire [12:0] h_rowsel		= h_addr[22:10];
+generate
+if (size == 32 * 1024 * 1024) begin
+	assign latched_banksel	= latched_addr[24:23];
+	assign h_banksel	= h_addr[24:23];
+	assign h_rowsel		= h_addr[22:10];
+	assign col_pchg		= {2'b00, 1'b1, 1'b0, latched_addr[9:1]};
+end else if (size == 64 * 1024 * 1024) begin
+	assign latched_banksel	= latched_addr[25:24];
+	assign h_banksel	= h_addr[25:24];
+	assign h_rowsel		= h_addr[23:11];
+	assign col_pchg		= {2'b00, 1'b1, latched_addr[10:1]};
+end
+endgenerate
 
 initial begin
 	s_clken			= 1'b1;
@@ -224,13 +238,13 @@ always @(posedge clk) begin
 		STATE_WRITE: begin
 			cmd <= CMD_WRITE;
 			/* Write with autoprecharge. */
-			s_addr <= {2'b00, 1'b1, 1'b0, latched_colsel};
+			s_addr <= col_pchg;
 			s_banksel <= latched_banksel;
 		end
 		STATE_READ: begin
 			cmd <= CMD_READ;
 			/* Read with autoprecharge. */
-			s_addr <= {2'b00, 1'b1, 1'b0, latched_colsel};
+			s_addr <= col_pchg;
 			s_banksel <= latched_banksel;
 		end
 		STATE_AUTOREF: begin

@@ -36,7 +36,8 @@ test_pattern_gen tpg(.pattern_sel(pattern_sel),
 		     .addr(h_addr[31:2]),
 		     .data(h_wdata));
 
-sdram_controller ctrl(.clk(clk),
+sdram_controller #(.size(64*1024*1024))
+		   ctrl(.clk(clk),
 		      .cs(cs),
 		      .h_addr(h_addr[31:2]),
 		      .h_wr_en(h_wr_en),
